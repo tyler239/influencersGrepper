@@ -10,7 +10,7 @@ Because the stadart chrome is auto-updated
 I just downloed the driver binary, not the chrome binary. So  probabilly Im not doing everything right. 
 '''
 
-def getDriver(cookiesPath=None) : 
+def getDriver(cookiesPath=None, headless=False) : 
     options = Options()
     options.add_experimental_option('detach',True)
     options.add_experimental_option('excludeSwitches', ['enable-automation'])
@@ -24,6 +24,9 @@ def getDriver(cookiesPath=None) :
                 '--log-level=3', '--ignore-certificate-errors', '--ignore-ssl-err'
                 'start-maximized', '--disable-blink-features=AutomationControlled', '--lang=en-US'] :
         options.add_argument(op)
+    
+    if headless : options.add_argument('--headless=new')
+
     return webdriver.Chrome(options=options, service=service)
 
 
