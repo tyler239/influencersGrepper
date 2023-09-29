@@ -3,6 +3,7 @@ import random, time
 from Typer import Typer
 from bs4 import BeautifulSoup
 from utils import getCookiesPath
+from constants import sanitation
 from driverModule import getDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -30,6 +31,7 @@ class RootInfluencer :
                 for cookie in cookies :
                     self.driver.add_cookie(cookie)
                 self.driver.refresh()
+                randomAwait()
         else :
             print('The cookies were not found. Pls check the path and try again.')
             print('Some features only work with cookies...')
@@ -73,7 +75,7 @@ class RootInfluencer :
             posts = posts.find_element(By.XPATH, './/span/span').text
             followers = followers.find_element(By.XPATH, './/span/span').text
             following = following.find_element(By.XPATH, './/span/span').text
-            return [posts, followers, following]
+            return [sanitation(posts), sanitation(followers), sanitation(following)]
         except Exception as e :
             print('Stats not found. Probably the xpath changed... Check it out.')
             print(f'Exeception: {e}')
@@ -101,7 +103,7 @@ class RootInfluencer :
 
             #Scrolling functonality to load more influencers
             sx, sy = 0, 0
-            for _ in range(1,4) :
+            for _ in range(1,2) :
                 #Getting all the visible a tags
                 soup = (BeautifulSoup(self.driver.find_element(By.CSS_SELECTOR, 'div[style="height: 400px; overflow: hidden auto;"]')
                                       .get_attribute('innerHTML'), 'html.parser'))

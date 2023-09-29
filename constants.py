@@ -1,15 +1,14 @@
-RELATED_INFLUENCERS = [
-      {"user1": [150, 5000, 600] },
-    {"user2": [220, 8000, 300]},
-    {"user3": [50, 200, 100]},
-    {"user4": [320, 15000, 1200]},
-    {"user5": [90, 3000, 450]},
-    {"user6": [420, 20000, 800]},
-    {"user7": [75, 2200, 600]},
-    {"user8": [180, 6000, 700]},
-    {"user9": [260, 10000, 400]},
-    {"user10": [30, 150, 50]}
-]
+RELATED_INFLUENCERS = []
 
+PITCH = '''Hi'''
 
-
+def sanitation(s) :
+    s = s.strip().replace(',', '.')
+    # Millions sanitation
+    if 'M' in s : return float(s.replace('M', '').strip()) * 1000000
+    # Thousands sanitation
+    if 'mil' in s : return float(s.replace('mil', '').strip()) * 1000
+    # Bellow 10k sanitation
+    if '.' in s : return float(s) * 1000
+    # Bellow 1k sanitation
+    return float(s)
