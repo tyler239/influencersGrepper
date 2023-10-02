@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from selenium_stealth import stealth
+#from selenium_stealth import stealth
 
 
 '''
@@ -10,7 +10,7 @@ Because the stadart chrome is auto-updated
 I just downloed the driver binary, not the chrome binary. So  probabilly Im not doing everything right. 
 '''
 
-def getDriver(cookiesPath=None, headless=False) : 
+def getDriver(cookiesPath=None, headless=True) : 
     options = Options()
     options.add_experimental_option('detach',True)
     options.add_experimental_option('excludeSwitches', ['enable-automation'])

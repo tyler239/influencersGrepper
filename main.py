@@ -7,7 +7,7 @@ from RootInfluencer import RootInfluencer, randomAwait
 # Logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='log.log', encoding='utf-8')
 
-#   Auxiliary functions
+# Auxiliary functions
 def spamStats(influencer : RootInfluencer) :
     try : 
         if len(influencer.relatedInfluencers) == 0 : return
