@@ -1,9 +1,9 @@
-import os, re
+import re
 import random, time
-from Typer import Typer
+from Utils.Typer import Typer
 from bs4 import BeautifulSoup
-from utils import getCookiesPath
-from constants import sanitation
+from Utils.utils import getCookies
+from Utils.constants import sanitation
 from driverModule import getDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -14,9 +14,9 @@ randomAwait = lambda : time.sleep(random.randint(1, 7))
 grepName = lambda url : re.findall(r'/(.+)/', url)[0]
 
 class RootInfluencer :
-    def __init__(self, rootInfluencer) -> None:
-        self.cookies_path = getCookiesPath()
-        self.driver = getDriver()
+    def __init__(self, username, rootInfluencer) -> None:
+        self.cookies = getCookies(username)
+        self.driver = getDriver(headless=False)
         self.rootInfluencer = rootInfluencer
         self.relatedInfluencers = []
         self.typer = Typer()
@@ -25,13 +25,12 @@ class RootInfluencer :
         self.driver.set_window_size(1440, 900)
     
     def loadCookies(self) -> bool :
-        if os.path.exists(self.cookies_path) :
-            with open(self.cookies_path, 'r') as file :
-                cookies = eval(file.read())
-                for cookie in cookies :
-                    self.driver.add_cookie(cookie)
-                self.driver.refresh()
-                randomAwait()
+        if self.cookies :
+            cookies = eval(self.cookies)
+            for cookie in cookies :
+                self.driver.add_cookie(cookie)
+            self.driver.refresh()
+            randomAwait()
         else :
             print('The cookies were not found. Pls check the path and try again.')
             print('Some features only work with cookies...')
