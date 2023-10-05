@@ -154,6 +154,6 @@ class RootInfluencer :
                 print('Related influencers not found with the 2 methods. Probably the xpath changed... Check it out.')
                 print(f'Exeception: {e}')
             
-        self.relatedInfluencers = usernames
+        self.relatedInfluencers = usernames[0:10]
 
         return self.relatedInfluencers

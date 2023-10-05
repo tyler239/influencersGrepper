@@ -1,11 +1,20 @@
 import sys
 import logging
-from constants import *
+from Utils.constants import *
+from Utils.utils import grepFileName
 from RootInfluencer import RootInfluencer, randomAwait
 
+# Basic logging configuration
+logger = logging.getLogger(grepFileName(__file__))
+logger.setLevel(logging.INFO)
 
-# Logging configuration
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='log.log', encoding='utf-8')
+handler = logging.FileHandler('log.log', encoding='utf-8')
+handler.setLevel(logging.INFO)
+
+formatter = logging.Formatter('%(asctime)s-%(levelname)s %(name)s -> %(message)s')
+
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 # Auxiliary functions
 def spamStats(influencer : RootInfluencer) :
@@ -20,7 +29,7 @@ def spamStats(influencer : RootInfluencer) :
             randomAwait()
 
     except Exception as e :
-        logging.error(f'Error while spamming the stats: {e}')
+        logger.error(f'Error while spamming the stats: {e}')
 
 def filterRelatedInfluencers() :
     try : 
@@ -29,7 +38,7 @@ def filterRelatedInfluencers() :
                 # 50M is the minimum number of followers
                 if i[key][1] < 50000000 : RELATED_INFLUENCERS.remove(i)
     except Exception as e :
-        logging.error(f'Error while filtering the related influencers: {e}')
+        logger.error(f'Error while filtering the related influencers: {e}')
 
 def spamMessage(influencer : RootInfluencer, message : str) :
     try :
@@ -39,34 +48,34 @@ def spamMessage(influencer : RootInfluencer, message : str) :
                 influencer.message(message, key)
                 randomAwait()
     except Exception as e :
-        logging.error(f'Error while spamming the message: {e}')
+        logger.error(f'Error while spamming the message: {e}')
 
 
 if __name__ == '__main__' :
     # Get the rootInfluecer passed in the command line
     if len(sys.argv) < 3 :
-        logging.error('Was not passed the username or the influencer as an argument.')
-        logging.error(f'{sys.argv}')
+        logger.error('Was not passed the username or the influencer as an argument.')
+        logger.error(f'{sys.argv}')
         print('Please, pass the root influencer as an argument.')
         exit()
 
     x = sys.argv[1].strip()
     y = sys.argv[2].strip()
-    logging.info(f'Username being used: {x}')
-    logging.info(f'Root influencer: {y}')
+    logger.info(f'Username being used: {x}')
+    logger.info(f'Root influencer: {y}')
 
     # Create the rootInfluencer object
-    rootInfluencer = RootInfluencer(x)
+    rootInfluencer = RootInfluencer(x, y)
     rootInfluencer.loadCookies()
 
     # If wasn't possible to get the related influencers, exit
     if rootInfluencer.getRelatedInfluencers() == [] :
-        logging.error('Was not possible to get the related influencers.')
+        logger.error('Was not possible to get the related influencers.')
         exit()
-    logging.info(f'Got {len(rootInfluencer.relatedInfluencers)} influencers')
+    logger.info(f'Got {len(rootInfluencer.relatedInfluencers)} influencers')
 
     spamStats(rootInfluencer)
     filterRelatedInfluencers()
     spamMessage(rootInfluencer, PITCH)
 
-    logging.info('Finished the execution.')
+    logger.info('Finished the execution.')

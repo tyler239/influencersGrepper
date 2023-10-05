@@ -1,8 +1,22 @@
 import os
+import logging
 import threading
 import subprocess
 import tkinter as tk
 from tkinter import ttk
+from Utils.utils import grepFileName
+
+# Basic logging configuration
+logger = logging.getLogger(grepFileName(__file__))
+logger.setLevel(logging.INFO)
+
+handler = logging.FileHandler('log.log', encoding='utf-8')
+handler.setLevel(logging.INFO)
+
+formatter = logging.Formatter('%(asctime)s-%(levelname)s %(name)s -> %(message)s')
+
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 class BaseFrame:
     def __init__(self, root):
@@ -38,6 +52,7 @@ class BaseFrame:
     third : the user is asked to insert the target influencer to make the spams
     '''
     def first(self):
+        logger.info('In the first state of the GUI')
         self.label.configure(text='Select your username')
         self.button.configure(text='Submit', command=self.checkUsername)
         self.label.place(relx=0.5, rely=0.4, anchor=tk.CENTER, bordermode='outside')
@@ -45,6 +60,7 @@ class BaseFrame:
         self.button.place(relx=0.5, rely=0.6, anchor=tk.CENTER)
 
     def second(self):
+        logger.info('In the second state of the GUI')
         self.refresh()
         self.label.configure(text='That username does not exist!\nPlease log on Instagram.')
         self.button.configure(text='Log on Instagram', command=self.saveCookies)
@@ -52,6 +68,7 @@ class BaseFrame:
         self.button.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
     def third(self):
+        logger.info('In the third state of the GUI')
         self.refresh()
         self.label.configure(text='Target influencer:')
         self.input.configure()
@@ -66,7 +83,7 @@ class BaseFrame:
         self.label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         try:
-            threading.Thread(target=self.runSubprocess, args=('mainCookies.py',)).start()
+            threading.Thread(target=self.runSubprocess, args=('cookiesSaver.py',)).start()
         except Exception as e:
             print(e)
             exit()
@@ -79,7 +96,7 @@ class BaseFrame:
         self.label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         try:
-            threading.Thread(target=self.runSubprocess, args=('mainSpam.py', self.username ,self.input.get().strip())).start()
+            threading.Thread(target=self.runSubprocess, args=('spam.py', self.username ,self.input.get().strip())).start()
         except Exception as e:
             print(e)
             exit()
@@ -94,6 +111,7 @@ class BaseFrame:
                     # Load the third state if the username exists
                     self.username = self.input.get().strip()
                     self.third()
+                    return
 
         # Load the second state if the username does not exist
         self.second()
@@ -107,6 +125,7 @@ class BaseFrame:
             x.append(args[1])
             x.append(args[2])
 
+        logger.info(f'Calling the subprocess: {x}')
         result = subprocess.run(x, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         self.output = result.stdout
         self.subprocessComplete = True  # Set the flag to indicate subprocess completion
