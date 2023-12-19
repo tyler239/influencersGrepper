@@ -17,11 +17,11 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 # Auxiliary functions
-def spamStats(influencer : RootInfluencer) :
+def spamStats(influencer : RootInfluencer, influencers : list = []) :
     try : 
-        if len(influencer.relatedInfluencers) == 0 : return
+        if len(influencers) == 0 : return
 
-        for i in influencer.relatedInfluencers :
+        for i in influencers :
             posts_followers_following = influencer.getStatsOf(i)
             
             if posts_followers_following == None : continue
@@ -40,12 +40,12 @@ def filterRelatedInfluencers() :
     except Exception as e :
         logger.error(f'Error while filtering the related influencers: {e}')
 
-def spamMessage(influencer : RootInfluencer, message : str) :
+def spamMessage(influencer : RootInfluencer) :
     try :
         for i in RELATED_INFLUENCERS :
             print(i)
             for key in i.keys() :
-                influencer.message(message, key)
+                influencer.message(key)
                 randomAwait()
     except Exception as e :
         logger.error(f'Error while spamming the message: {e}')
@@ -53,29 +53,32 @@ def spamMessage(influencer : RootInfluencer, message : str) :
 
 if __name__ == '__main__' :
     # Get the rootInfluecer passed in the command line
-    if len(sys.argv) < 3 :
-        logger.error('Was not passed the username or the influencer as an argument.')
+    if len(sys.argv) < 4 :
+        logger.error('Was not passed the username, or the target hashtag, or the message to spam.s')
         logger.error(f'{sys.argv}')
-        print('Please, pass the root influencer as an argument.')
+        print('Please, pass the necessary arguments (username, hashtag, message).')
         exit()
 
     x = sys.argv[1].strip()
     y = sys.argv[2].strip()
+    z = sys.argv[3].strip()
     logger.info(f'Username being used: {x}')
-    logger.info(f'Root influencer: {y}')
+    logger.info(f'Target hashtag: {y}')
+    logger.info(f'Message to spam: {z}')
 
     # Create the rootInfluencer object
-    rootInfluencer = RootInfluencer(x, y)
+    rootInfluencer = RootInfluencer(x, y, z)
     rootInfluencer.loadCookies()
 
     # If wasn't possible to get the related influencers, exit
-    if rootInfluencer.getRelatedInfluencers() == [] :
+    influencers = rootInfluencer.getInfluencers()
+    if influencers == [] :
         logger.error('Was not possible to get the related influencers.')
         exit()
-    logger.info(f'Got {len(rootInfluencer.relatedInfluencers)} influencers')
+    logger.info(f'Got {len(influencers)} influencers')
 
-    spamStats(rootInfluencer)
+    spamStats(rootInfluencer, influencers)
     filterRelatedInfluencers()
-    spamMessage(rootInfluencer, PITCH)
+    spamMessage(rootInfluencer)
 
     logger.info('Finished the execution.')

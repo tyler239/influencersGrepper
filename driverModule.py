@@ -10,23 +10,26 @@ Because the stadart chrome is auto-updated
 I just downloed the driver binary, not the chrome binary. So  probabilly Im not doing everything right. 
 '''
 
-def getDriver(cookiesPath=None, headless=True) : 
+def getDriver(cookiesPath=None, headless=False) :
     options = Options()
     options.add_experimental_option('detach',True)
     options.add_experimental_option('excludeSwitches', ['enable-automation'])
     options.add_experimental_option('useAutomationExtension', False)
     options.add_argument('--disable-blink-features=AutomationControlled')
+    options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
 
-    service = Service(executable_path=r'C:\Users\victo\chromedriver\win64-116.0.5845.96\chromedriver-win64\chromedriver.exe')
+    service = Service(executable_path=r'C:\Users\victo\chromedriver-win64\chromedriver-win64\chromedriver.exe')
 
-    for op in [ '--disable-notifications', '--disable-infobars', '--disable-extensions', 
-               '--disable-dev-shm-usage', '--no-sandbox', '--disable-gpu', 
-                '--log-level=3', '--ignore-certificate-errors', '--ignore-ssl-err'
-                'start-maximized', '--disable-blink-features=AutomationControlled', '--lang=en-US'] :
-        options.add_argument(op)
     
-    if headless : options.add_argument('--headless=new')
+    ops = ['--disable-notifications', '--disable-infobars', '--disable-extensions',
+               '--disable-dev-shm-usage', '--no-sandbox', '--disable-gpu',
+                '--log-level=3', '--ignore-certificate-errors', '--ignore-ssl-err'
+                'start-maximized', '--disable-blink-features=AutomationControlled', '--lang=en-US']
 
+    if headless : ops.append('--headless=new')
+
+    for op in ops :
+        options.add_argument(op)
     return webdriver.Chrome(options=options, service=service)
 
 

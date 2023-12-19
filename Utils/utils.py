@@ -18,4 +18,4 @@ def getCookies(username : str) :
         with open(os.path.join(dirname, '..', 'Cookies', f), 'r') as file:
             if username in file.readline():
                 return file.readline().strip()
-    return None
+    return None 

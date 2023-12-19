@@ -67,10 +67,25 @@ class BaseFrame:
         self.label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
         self.button.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
+    # The third state and the fourth state work together, is just a matter of getting the desired hashtag
+    # and the desired message to spam
+        
     def third(self):
         logger.info('In the third state of the GUI')
         self.refresh()
-        self.label.configure(text='Target influencer:')
+        self.label.configure(text='Target hashtag:')
+        self.input.configure()
+        self.button.configure(text='Submit', command=self.fourth)
+        self.label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
+        self.input.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        self.button.place(relx=0.5, rely=0.6, anchor=tk.CENTER)
+    
+
+    def fourth(self):
+        logger.info('In the fourth state of the GUI')
+        self.hashtag = self.input.get().strip()
+        self.refresh()
+        self.label.configure(text='Message to spam:')
         self.input.configure()
         self.button.configure(text='Submit', command=self.spam)
         self.label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
@@ -92,11 +107,12 @@ class BaseFrame:
 
     # It is called by the third state
     def spam(self):
+        self.message = self.input.get().strip()
         self.refresh()
         self.label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         try:
-            threading.Thread(target=self.runSubprocess, args=('spam.py', self.username ,self.input.get().strip())).start()
+            threading.Thread(target=self.runSubprocess, args=('spam.py', self.username ,self.hashtag, self.message)).start()
         except Exception as e:
             print(e)
             exit()
@@ -119,15 +135,19 @@ class BaseFrame:
     def runSubprocess(self, *args):
         # Basic treatment of the arguments
         dirname = os.path.dirname(os.path.abspath(__file__))
-        x = ['python', os.path.join(dirname, args[0])]
+        activate = os.path.join(dirname, 'venv', 'Scripts', 'activate.bat') 
 
-        if len(args) == 3:
+        x = [activate, '&&', 'python', os.path.join(dirname, args[0])]
+
+        if len(args) == 4: 
             x.append(args[1])
             x.append(args[2])
+            x.append(args[3])
 
         logger.info(f'Calling the subprocess: {x}')
         result = subprocess.run(x, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        self.output = result.stdout
+        logger.info(f'Subprocess result: {result}')
+        self.output = result.stdout 
         self.subprocessComplete = True  # Set the flag to indicate subprocess completion
 
     def loading(self):
@@ -148,6 +168,7 @@ class BaseFrame:
     def refresh(self):
         self.label.place_forget()
         self.input.place_forget()
+        self.input.delete(0, tk.END)
         self.button.place_forget()
 
 
