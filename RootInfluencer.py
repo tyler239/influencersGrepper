@@ -95,6 +95,7 @@ class RootInfluencer :
         
     
     def getInfluencers(self) -> list : 
+        self.hashtag = self.hashtag.replace('#', '')
         self.driver.get(f'https://www.instagram.com/explore/tags/{self.hashtag}/')
         randomAwait()
         links = []

@@ -1,5 +1,6 @@
 import os
 import logging
+import platform
 import threading
 import subprocess
 import tkinter as tk
@@ -135,9 +136,14 @@ class BaseFrame:
     def runSubprocess(self, *args):
         # Basic treatment of the arguments
         dirname = os.path.dirname(os.path.abspath(__file__))
-        activate = os.path.join(dirname, 'venv', 'Scripts', 'activate.bat') 
+        activate = os.path.join(dirname, 'venv', 'Scripts', 'activate.bat')
+        p = 'python'
 
-        x = [activate, '&&', 'python', os.path.join(dirname, args[0])]
+        if platform.system() == 'Linux':
+            activate = f"source {os.path.join(dirname, 'venv', 'bin', 'activate')}" 
+            p = 'python3'
+
+        x = [activate, '&&', p , os.path.join(dirname, args[0])]
 
         if len(args) == 4: 
             x.append(args[1])

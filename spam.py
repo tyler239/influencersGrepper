@@ -32,11 +32,15 @@ def spamStats(influencer : RootInfluencer, influencers : list = []) :
         logger.error(f'Error while spamming the stats: {e}')
 
 def filterRelatedInfluencers() :
+    toDelete = []
     try : 
         for i in RELATED_INFLUENCERS :
             for key in i.keys() :
                 # 50M is the minimum number of followers
-                if i[key][1] < 50000000 : RELATED_INFLUENCERS.remove(i)
+                if i[key][1] < 50000000 : 
+                    toDelete.append(i)
+        
+        for i in toDelete : RELATED_INFLUENCERS.remove(i)
     except Exception as e :
         logger.error(f'Error while filtering the related influencers: {e}')
 
@@ -80,5 +84,8 @@ if __name__ == '__main__' :
     spamStats(rootInfluencer, influencers)
     filterRelatedInfluencers()
     spamMessage(rootInfluencer)
+    
+    randomAwait()   
+    rootInfluencer.driver.close()
 
     logger.info('Finished the execution.')
