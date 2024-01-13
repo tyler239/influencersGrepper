@@ -32,13 +32,13 @@ if __name__ == '__main__' :
         
         driver.find_element(By.XPATH, '//span[text()="For you"]')
         logger.info('Logged in successfully')
+        randomAwait()
 
         # Just go to the profile page, check everything
         driver.find_elements(By.XPATH, '//div[count(div)=8]/div')[7].click()
 
         # See if the name matches
-        WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.XPATH, '//h2')))
-        name = driver.find_element(By.XPATH, '//h2').text
+        name = driver.current_url.split('/')[-2]
         logger.info(f'Name of the logged in user: {name}')
         randomAwait()  
 

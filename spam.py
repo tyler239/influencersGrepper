@@ -36,10 +36,11 @@ def filterRelatedInfluencers() :
     try : 
         for i in RELATED_INFLUENCERS :
             for key in i.keys() :
-                # 50M is the minimum number of followers
-                if i[key][1] < 50000000 : 
+                # 40K is the minimum number of followers
+                if i[key][1] < 40000 : 
                     toDelete.append(i)
         
+        logger.info(f'Will delete {len(toDelete)} influencers, that was not suitable for the operation.')
         for i in toDelete : RELATED_INFLUENCERS.remove(i)
     except Exception as e :
         logger.error(f'Error while filtering the related influencers: {e}')
@@ -50,13 +51,12 @@ def spamMessage(influencer : RootInfluencer) :
             print(i)
             for key in i.keys() :
                 influencer.message(key)
-                randomAwait()
+                randomAwait();randomAwait()
     except Exception as e :
         logger.error(f'Error while spamming the message: {e}')
 
 
 if __name__ == '__main__' :
-    # Get the rootInfluecer passed in the command line
     if len(sys.argv) < 4 :
         logger.error('Was not passed the username, or the target hashtag, or the message to spam.s')
         logger.error(f'{sys.argv}')

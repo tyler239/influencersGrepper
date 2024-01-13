@@ -122,6 +122,10 @@ class BaseFrame:
 
     def checkUsername(self):
         dirname = os.path.dirname(os.path.abspath(__file__))
+
+        # Check if the cookies dir exists, if not create it
+        if(not os.path.exists(os.path.join(dirname, 'Cookies'))): os.mkdir(os.path.join(dirname, 'Cookies'))
+
         for f in os.listdir(os.path.join(dirname, 'Cookies')):
             with open(os.path.join(dirname, 'Cookies', f), 'r') as file:
                 if self.input.get().strip() in file.readline():

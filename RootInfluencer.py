@@ -1,14 +1,28 @@
 import re
+import logging
 import random, time
 from Utils.Typer import Typer
 from bs4 import BeautifulSoup
-from Utils.utils import getCookies
 from driverModule import getDriver
 from Utils.constants import sanitation
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from Utils.utils import getCookies, grepFileName
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+
+# Basic logging configuration
+logger = logging.getLogger(grepFileName(__file__))
+logger.setLevel(logging.INFO)
+
+handler = logging.FileHandler('log.log', encoding='utf-8')
+handler.setLevel(logging.INFO)
+
+formatter = logging.Formatter('%(asctime)s-%(levelname)s %(name)s -> %(message)s')
+
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 randomAwait = lambda : time.sleep(random.randint(1, 7))
 grepName = lambda url : re.findall(r'/(.+)/', url)[0]
@@ -33,8 +47,8 @@ class RootInfluencer :
             self.driver.refresh()
             randomAwait()
         else :
-            print('The cookies were not found. Pls check the path and try again.')
-            print('Some features only work with cookies...')
+            logger.error('The cookies were not found. Pls check the path and try again.')
+            logger.error('Some features only work with cookies...')
             return False
         return True
 
@@ -62,8 +76,9 @@ class RootInfluencer :
             try : 
                 self.driver.find_elements(By.XPATH, '//div[@role="button"]')[1].click()
             except Exception as e :
-                print('Message button not found. Probably the xpath changed... Check it out.')
-                print(f'Exeception: {e}')
+                logger.error('Message button not found. Probably the xpath changed... Check it out.')
+                logger.error(f'Exeception: {e}')
+                return
         
         #Send the message
         randomAwait()
@@ -73,8 +88,8 @@ class RootInfluencer :
             self.typer.send(x, self.msg)
             x.send_keys(Keys.ENTER)
         except Exception as e :
-            print('Message box not found. Probably the xpath changed... Check it out.')
-            print(f'Exeception: {e}')
+            logger.error('Message box not found. Probably the xpath changed... Check it out.')
+            logger.error(f'Exeception: {e}')
         
 
     def getStatsOf(self, influencer : str) :
@@ -113,7 +128,7 @@ class RootInfluencer :
             
             # Get the href of the 3 links
             for _ in soup.css.select('a') : 
-                if _.get('href') not in links : links.append(_.get('href'))
+                if _.get('href') not in links : links.append(_.get('href',''))
         
 
         # Now go to each one of this links just to get the name of the account  
