@@ -37,7 +37,7 @@ def filterRelatedInfluencers() :
         for i in RELATED_INFLUENCERS :
             for key in i.keys() :
                 # 40K is the minimum number of followers
-                if i[key][1] < 40000 : 
+                if i[key][1] < 1000 : 
                     toDelete.append(i)
         
         logger.info(f'Will delete {len(toDelete)} influencers, that was not suitable for the operation.')
@@ -47,11 +47,14 @@ def filterRelatedInfluencers() :
 
 def spamMessage(influencer : RootInfluencer) :
     try :
+        counter = 0
         for i in RELATED_INFLUENCERS :
             print(i)
             for key in i.keys() :
                 influencer.message(key)
                 randomAwait();randomAwait()
+                counter += 1
+                if counter == 10 : return
     except Exception as e :
         logger.error(f'Error while spamming the message: {e}')
 

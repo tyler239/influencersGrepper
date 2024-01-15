@@ -144,10 +144,10 @@ class BaseFrame:
         p = 'python'
 
         if platform.system() == 'Linux':
-            activate = f"source {os.path.join(dirname, 'venv', 'bin', 'activate')}" 
             p = 'python3'
-
-        x = [activate, '&&', p , os.path.join(dirname, args[0])]
+            x = ['bash', '-c', f'source {os.path.join(dirname, "venv", "bin", "activate")} && {p} {os.path.join(dirname, args[0])}']
+        else : 
+            x = [activate, '&&', p , os.path.join(dirname, args[0])]
 
         if len(args) == 4: 
             x.append(args[1])
