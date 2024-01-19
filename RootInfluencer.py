@@ -1,4 +1,4 @@
-import re
+import os, re
 import logging
 import random, time
 from Utils.Typer import Typer
@@ -114,7 +114,17 @@ class RootInfluencer :
         self.driver.get(f'https://www.instagram.com/explore/tags/{self.hashtag}/')
         randomAwait()
         links = []
-        influencers = []
+        currentInfluencers = []
+        influencersFileLoc = os.path.join(os.getcwd(), 'Cookies', 'influencers.txt')
+
+        if not os.path.exists(influencersFileLoc) : 
+            with open(influencersFileLoc, 'w') as file : file.write('')
+
+        # influencers is an array with the name of all influencers that have been sent a message
+        with open(influencersFileLoc, 'r') as file : 
+            savedInfluencers = file.read().strip().split(';')
+
+        logger.info(f'Saved influ {savedInfluencers}')
 
         '''
         Here the name of the accounts are not visiable, so we are grepping the url to that post 
@@ -138,10 +148,9 @@ class RootInfluencer :
 
             WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//main//a//span')))
             name = self.driver.find_elements(By.XPATH, '//main//a//span')[0].text
-            if name not in influencers : influencers.append(name)
+            if name not in savedInfluencers and name not in currentInfluencers : 
+                currentInfluencers.append(name)
+            else : logger.critical(f'{name} already sent a message')
 
-            # It is just possible to send message to 10 people per day, so that is the constrait
-            # Now this constrait is on the spam.py file, in the spamMessage function
-            #if len(influencers) == 5 : break
-
-        return influencers
+        logger.info(f'Current influ {currentInfluencers}')
+        return currentInfluencers

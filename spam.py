@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import logging
 from Utils.constants import *
 from Utils.utils import grepFileName
@@ -36,7 +36,7 @@ def filterRelatedInfluencers() :
     try : 
         for i in RELATED_INFLUENCERS :
             for key in i.keys() :
-                # 40K is the minimum number of followers
+                # 1K is the minimum number of followers
                 if i[key][1] < 1000 : 
                     toDelete.append(i)
         
@@ -44,19 +44,37 @@ def filterRelatedInfluencers() :
         for i in toDelete : RELATED_INFLUENCERS.remove(i)
     except Exception as e :
         logger.error(f'Error while filtering the related influencers: {e}')
+       
 
 def spamMessage(influencer : RootInfluencer) :
+    # Record the influencers that have been messaged
+    messagedInfluencers =[]
     try :
         counter = 0
         for i in RELATED_INFLUENCERS :
-            print(i)
             for key in i.keys() :
                 influencer.message(key)
                 randomAwait();randomAwait()
+                messagedInfluencers.append(key)
                 counter += 1
-                if counter == 10 : return
+
+            # The limit of users to message
+            if counter == 1 : break
+
     except Exception as e :
         logger.error(f'Error while spamming the message: {e}')
+
+    finally :
+        influencersFileLoc = os.path.join(os.getcwd(), 'Cookies', 'influencers.txt')
+         # Get the old ones
+        with open(influencersFileLoc, 'r') as file : influencers = file.read().strip().split(';')
+
+        # Add the new ones
+        influencers += messagedInfluencers
+
+        # Save them all in a CSV file
+        with open(influencersFileLoc, 'w') as f : f.write(';'.join(influencers)) 
+
 
 
 if __name__ == '__main__' :
@@ -79,6 +97,10 @@ if __name__ == '__main__' :
 
     # If wasn't possible to get the related influencers, exit
     influencers = rootInfluencer.getInfluencers()
+
+    # Basically cleaning the list
+    influencers = [ i for i in influencers if i ] 
+
     if influencers == [] :
         logger.error('Was not possible to get the related influencers.')
         exit()
