@@ -1,8 +1,8 @@
 import sys, os
 import logging
 from Utils.constants import *
-from Utils.utils import grepFileName
 from RootInfluencer import RootInfluencer, randomAwait
+from Utils.utils import grepFileName, updateInfluencersFile
 
 # Basic logging configuration
 logger = logging.getLogger(grepFileName(__file__))
@@ -17,64 +17,45 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 # Auxiliary functions
-def spamStats(influencer : RootInfluencer, influencers : list = []) :
+def filterInfluencers(influencer : RootInfluencer, influencers : list = []) :
     try : 
         if len(influencers) == 0 : return
 
         for i in influencers :
+            # Filter based on the posts, followers or following attributes
             posts_followers_following = influencer.getStatsOf(i)
-            
             if posts_followers_following == None : continue
-            RELATED_INFLUENCERS.append({i : posts_followers_following})
-            randomAwait()
+            if posts_followers_following[1] < 1000 : continue
+
+            # Filter based on links in the bio
+            links = influencer.getLinksOf(i)
+            if any(['/?u' in link for link in links]) : continue
+            
+            RELATED_INFLUENCERS.append(i)
 
     except Exception as e :
-        logger.error(f'Error while spamming the stats: {e}')
+        logger.error(f'Error filtering the influencers : {e}')
 
-def filterRelatedInfluencers() :
-    toDelete = []
-    try : 
-        for i in RELATED_INFLUENCERS :
-            for key in i.keys() :
-                # 1K is the minimum number of followers
-                if i[key][1] < 1000 : 
-                    toDelete.append(i)
-        
-        logger.info(f'Will delete {len(toDelete)} influencers, that was not suitable for the operation.')
-        for i in toDelete : RELATED_INFLUENCERS.remove(i)
-    except Exception as e :
-        logger.error(f'Error while filtering the related influencers: {e}')
        
-
 def spamMessage(influencer : RootInfluencer) :
     # Record the influencers that have been messaged
     messagedInfluencers =[]
     try :
         counter = 0
         for i in RELATED_INFLUENCERS :
-            for key in i.keys() :
-                influencer.message(key)
-                randomAwait();randomAwait()
-                messagedInfluencers.append(key)
-                counter += 1
+            influencer.message(i)
+            randomAwait();randomAwait()
+            messagedInfluencers.append(i)
+            counter += 1
 
             # The limit of users to message
-            if counter == 1 : break
+            if counter == 10 : break
 
     except Exception as e :
         logger.error(f'Error while spamming the message: {e}')
 
     finally :
-        influencersFileLoc = os.path.join(os.getcwd(), 'Cookies', 'influencers.txt')
-         # Get the old ones
-        with open(influencersFileLoc, 'r') as file : influencers = file.read().strip().split(';')
-
-        # Add the new ones
-        influencers += messagedInfluencers
-
-        # Save them all in a CSV file
-        with open(influencersFileLoc, 'w') as f : f.write(';'.join(influencers)) 
-
+        updateInfluencersFile(influencer.username, messagedInfluencers)
 
 
 if __name__ == '__main__' :
@@ -95,7 +76,6 @@ if __name__ == '__main__' :
     rootInfluencer = RootInfluencer(x, y, z)
     rootInfluencer.loadCookies()
 
-    # If wasn't possible to get the related influencers, exit
     influencers = rootInfluencer.getInfluencers()
 
     # Basically cleaning the list
@@ -106,8 +86,7 @@ if __name__ == '__main__' :
         exit()
     logger.info(f'Got {len(influencers)} influencers')
 
-    spamStats(rootInfluencer, influencers)
-    filterRelatedInfluencers()
+    filterInfluencers(rootInfluencer, influencers)
     spamMessage(rootInfluencer)
     
     randomAwait()   

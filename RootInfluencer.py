@@ -7,9 +7,9 @@ from driverModule import getDriver
 from Utils.constants import sanitation
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from Utils.utils import getCookies, grepFileName
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from Utils.utils import getCookies, grepFileName, getInfluencersFile
 
 
 # Basic logging configuration
@@ -93,8 +93,10 @@ class RootInfluencer :
         
 
     def getStatsOf(self, influencer : str) :
-        self.driver.get(f'https://www.instagram.com/{influencer}/')
-        randomAwait()
+        if f'https://www.instagram.com/{influencer}/' != self.driver.current_url :
+            self.driver.get(f'https://www.instagram.com/{influencer}/')
+            randomAwait()
+
         try :
             WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//section/ul/li')))
 
@@ -108,6 +110,16 @@ class RootInfluencer :
             print(f'Exeception: {e}')
             return None
         
+    def getLinksOf(self, influencer) -> list :
+        if f'https://www.instagram.com/{influencer}/' != self.driver.current_url :
+            self.driver.get(f'https://www.instagram.com/{influencer}/')
+            randomAwait()
+
+        links = self.driver.find_elements(By.CSS_SELECTOR, 'main section ul + div a')
+        links = [link.get_attribute('href') for link in links]
+        logger.info(f'The links that has gotten from {influencer} are: {links}')
+        return links
+        
     
     def getInfluencers(self) -> list : 
         self.hashtag = self.hashtag.replace('#', '')
@@ -115,16 +127,8 @@ class RootInfluencer :
         randomAwait()
         links = []
         currentInfluencers = []
-        influencersFileLoc = os.path.join(os.getcwd(), 'Cookies', 'influencers.txt')
-
-        if not os.path.exists(influencersFileLoc) : 
-            with open(influencersFileLoc, 'w') as file : file.write('')
-
-        # influencers is an array with the name of all influencers that have been sent a message
-        with open(influencersFileLoc, 'r') as file : 
-            savedInfluencers = file.read().strip().split(';')
-
-        logger.info(f'Saved influ {savedInfluencers}')
+        
+        savedInfluencers = getInfluencersFile(self.username)
 
         '''
         Here the name of the accounts are not visiable, so we are grepping the url to that post 
@@ -141,16 +145,14 @@ class RootInfluencer :
                 if _.get('href') not in links : links.append(_.get('href',''))
         
 
-        # Now go to each one of this links just to get the name of the account  
+        # Now go to each one of this links just to get the name of the account 
         for link in links : 
             self.driver.get(f'https://www.instagram.com{link}')
             randomAwait();randomAwait()
-
+            
             WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//main//a//span')))
             name = self.driver.find_elements(By.XPATH, '//main//a//span')[0].text
             if name not in savedInfluencers and name not in currentInfluencers : 
-                currentInfluencers.append(name)
-            else : logger.critical(f'{name} already sent a message')
-
-        logger.info(f'Current influ {currentInfluencers}')
+                currentInfluencers.append(name)  
+                
         return currentInfluencers
