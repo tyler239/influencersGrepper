@@ -30,7 +30,7 @@ grepName = lambda url : re.findall(r'/(.+)/', url)[0]
 class RootInfluencer :
     def __init__(self, _username, _hashtag, _message) -> None:
         self.cookies = getCookies(_username)
-        self.driver = getDriver(headless=False)
+        self.driver = getDriver(headless=True)
         self.typer = Typer()
         self.driver.get('https://www.instagram.com/')
         randomAwait()

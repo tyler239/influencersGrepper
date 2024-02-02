@@ -1,3 +1,4 @@
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -18,7 +19,8 @@ def getDriver(cookiesPath=None, headless=False) :
     options.add_argument('--disable-blink-features=AutomationControlled')
     options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
 
-    service = Service(executable_path=r'C:\Users\victo\chromedriver-win64\chromedriver-win64\chromedriver.exe')
+    path = f'{os.environ.get("USERPROFILE")}\\influencersGrepper\\chromedriver-win64\\chromedriver-win64\\chromedriver.exe'
+    service = Service(executable_path=path)
 
     
     ops = ['--disable-notifications', '--disable-infobars', '--disable-extensions',
