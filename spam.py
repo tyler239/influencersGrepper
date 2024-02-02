@@ -32,6 +32,7 @@ def filterInfluencers(influencer : RootInfluencer, influencers : list = []) :
             if any(['/?u' in link for link in links]) : continue
             
             RELATED_INFLUENCERS.append(i)
+            logger.info(f'{i} was selected.')
 
     except Exception as e :
         logger.error(f'Error filtering the influencers : {e}')
@@ -55,7 +56,7 @@ def spamMessage(influencer : RootInfluencer) :
         logger.error(f'Error while spamming the message: {e}')
 
     finally :
-        updateInfluencersFile(influencer.username, messagedInfluencers)
+        updateInfluencersFile(messagedInfluencers)
 
 
 if __name__ == '__main__' :

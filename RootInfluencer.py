@@ -30,7 +30,7 @@ grepName = lambda url : re.findall(r'/(.+)/', url)[0]
 class RootInfluencer :
     def __init__(self, _username, _hashtag, _message) -> None:
         self.cookies = getCookies(_username)
-        self.driver = getDriver(headless=True)
+        self.driver = getDriver(headless=False)
         self.typer = Typer()
         self.driver.get('https://www.instagram.com/')
         randomAwait()
@@ -76,7 +76,8 @@ class RootInfluencer :
             try : 
                 self.driver.find_elements(By.XPATH, '//div[@role="button"]')[1].click()
             except Exception as e :
-                logger.error('Message button not found. Probably the xpath changed... Check it out.')
+                logger.error(f'Could not message {to}')
+                logger.error('The message button, just to get into the chat not found :(.')
                 logger.error(f'Exeception: {e}')
                 return
         
@@ -88,6 +89,7 @@ class RootInfluencer :
             self.typer.send(x, self.msg)
             x.send_keys(Keys.ENTER)
         except Exception as e :
+            logger.error(f'Could not message {to}')
             logger.error('Message box not found. Probably the xpath changed... Check it out.')
             logger.error(f'Exeception: {e}')
         
@@ -117,7 +119,6 @@ class RootInfluencer :
 
         links = self.driver.find_elements(By.CSS_SELECTOR, 'main section ul + div a')
         links = [link.get_attribute('href') for link in links]
-        logger.info(f'The links that has gotten from {influencer} are: {links}')
         return links
         
     
@@ -128,7 +129,7 @@ class RootInfluencer :
         links = []
         currentInfluencers = []
         
-        savedInfluencers = getInfluencersFile(self.username)
+        savedInfluencers = getInfluencersFile()
 
         '''
         Here the name of the accounts are not visiable, so we are grepping the url to that post 

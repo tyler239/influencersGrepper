@@ -21,7 +21,8 @@ def getCookies(username : str) :
     return None 
 
 # Function related to the rudimentary influencers database
-def getInfluencersFile(username : str) -> list:
+# Now is going to be a single file for all accounts
+def getInfluencersFile() -> list:
     abs_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Case the Influencers folder does not exist
@@ -29,24 +30,24 @@ def getInfluencersFile(username : str) -> list:
         os.mkdir(os.path.join( abs_dir , '..', 'Influencers'))
     
     # Case the file does not exist
-    if not os.path.exists(os.path.join(abs_dir, '..', 'Influencers', f'influencers{username}.txt')) :
-        with open(os.path.join(abs_dir, '..', 'Influencers', f'influencers{username}.txt'), 'w') as file :
-            file.write(f'{username}\n;')
+    if not os.path.exists(os.path.join(abs_dir, '..', 'Influencers', f'influencers.txt')) :
+        with open(os.path.join(abs_dir, '..', 'Influencers', f'influencers.txt'), 'w') as file :
+            file.write(f'influencers\n')
         return []
     
     # Case the file exists
-    with open(os.path.join(abs_dir, '..', 'Influencers', f'influencers{username}.txt'), 'r') as file :
+    with open(os.path.join(abs_dir, '..', 'Influencers', f'influencers.txt'), 'r') as file :
         file.readline()
         return file.read().strip().split(';')
 
-def updateInfluencersFile(username : str, influencers : list) :
+def updateInfluencersFile(influencers : list) :
     abs_dir = os.path.dirname(os.path.abspath(__file__))
 
-    with open(os.path.join(abs_dir, '..', 'Influencers', f'influencers{username}.txt'), 'r') as file :
+    with open(os.path.join(abs_dir, '..', 'Influencers', f'influencers.txt'), 'r') as file :
         file.readline()
         old = file.read().strip().split(';')
     
-    with open(os.path.join(abs_dir, '..', 'Influencers', f'influencers{username}.txt'), 'w') as file :
-        file.write(f'{username}\n')
+    with open(os.path.join(abs_dir, '..', 'Influencers', f'influencers.txt'), 'w') as file :
+        file.write(f'influencers\n')
         file.write(';'.join(old + influencers))
         
