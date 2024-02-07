@@ -30,7 +30,7 @@ grepName = lambda url : re.findall(r'/(.+)/', url)[0]
 class RootInfluencer :
     def __init__(self, _username, _hashtag, _message) -> None:
         self.cookies = getCookies(_username)
-        self.driver = getDriver(headless=True)
+        self.driver = getDriver(headless=False)
         self.typer = Typer()
         self.driver.get('https://www.instagram.com/')
         randomAwait()
@@ -117,10 +117,15 @@ class RootInfluencer :
             self.driver.get(f'https://www.instagram.com/{influencer}/')
             randomAwait()
 
-        links = self.driver.find_elements(By.CSS_SELECTOR, 'main section ul + div a')
-        links = [link.get_attribute('href') for link in links]
-        return links
-        
+        links = []
+        try : 
+            links = self.driver.find_elements(By.CSS_SELECTOR, 'main section ul + div a')
+            links = [link.get_attribute('href') for link in links]
+        except Exception as e :
+            print(f'Error getting links of {influencer}...')
+            print(f'Exeception: {e}')
+        finally :
+            return links
     
     def getInfluencers(self) -> list : 
         self.hashtag = self.hashtag.replace('#', '')
@@ -135,7 +140,7 @@ class RootInfluencer :
         Here the name of the accounts are not visiable, so we are grepping the url to that post 
         and them, getting the name of the account
         '''
-        WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//article//div[count(div)=3]')))
+        WebDriverWait(self.driver, 90).until(EC.presence_of_element_located((By.XPATH, '//article//div[count(div)=3]')))
 
         # Get only the rows that have 3 divs, which are the posts
         for i in self.driver.find_elements(By.XPATH, '//article//div[count(div)=3]') :
@@ -146,14 +151,18 @@ class RootInfluencer :
                 if _.get('href') not in links : links.append(_.get('href',''))
         
 
-        # Now go to each one of this links just to get the name of the account 
+        # Now go to each one of this links just to get the name of the account
         for link in links : 
-            self.driver.get(f'https://www.instagram.com{link}')
-            randomAwait();randomAwait()
-            
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//main//a//span')))
-            name = self.driver.find_elements(By.XPATH, '//main//a//span')[0].text
-            if name not in savedInfluencers and name not in currentInfluencers : 
-                currentInfluencers.append(name)  
+            try :
+                self.driver.get(f'https://www.instagram.com{link}')
+                randomAwait();randomAwait()
+                
+                WebDriverWait(self.driver, 70).until(EC.presence_of_element_located((By.XPATH, '//main//a//span')))
+                name = self.driver.find_elements(By.XPATH, '//main//a//span')[0].text
+                if name not in savedInfluencers and name not in currentInfluencers : 
+                    currentInfluencers.append(name)  
+            except Exception as e :
+                print(f'Error going to {link}...')
+                print(f'Exeception: {e}')
                 
         return currentInfluencers
