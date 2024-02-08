@@ -44,10 +44,10 @@ def spamMessage(influencer : RootInfluencer) :
     try :
         counter = 0
         for i in RELATED_INFLUENCERS :
-            influencer.message(i)
-            randomAwait();randomAwait()
-            messagedInfluencers.append(i)
-            counter += 1
+            if influencer.message(i) : 
+                randomAwait();randomAwait()
+                messagedInfluencers.append(i)
+                counter += 1
 
             # The limit of users to message
             if counter == 10 : break

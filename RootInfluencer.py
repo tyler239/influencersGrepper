@@ -30,7 +30,7 @@ grepName = lambda url : re.findall(r'/(.+)/', url)[0]
 class RootInfluencer :
     def __init__(self, _username, _hashtag, _message) -> None:
         self.cookies = getCookies(_username)
-        self.driver = getDriver(headless=False)
+        self.driver = getDriver(headless=True)
         self.typer = Typer()
         self.driver.get('https://www.instagram.com/')
         randomAwait()
@@ -65,13 +65,13 @@ class RootInfluencer :
         return (finalHeaders, cookies)
     
     #Just possible with cookies
-    def message(self, to) :
+    def message(self, to) -> bool :
         self.driver.get(f'https://www.instagram.com/{to}/')
         randomAwait()
 
         #Click on the message button
         try : 
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//div[text()="Message"]'))).click()
+            WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.XPATH, '//div[text()="Message"]'))).click()
         except : 
             try : 
                 self.driver.find_elements(By.XPATH, '//div[@role="button"]')[1].click()
@@ -79,19 +79,21 @@ class RootInfluencer :
                 logger.error(f'Could not message {to}')
                 logger.error('The message button, just to get into the chat not found :(.')
                 logger.error(f'Exeception: {e}')
-                return
+                return False
         
         #Send the message
         randomAwait()
         try :
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Message"]/p')))
+            WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Message"]/p')))
             x = self.driver.find_element(By.XPATH, '//div[@aria-label="Message"]/p')
             self.typer.send(x, self.msg)
             x.send_keys(Keys.ENTER)
+            return True
         except Exception as e :
             logger.error(f'Could not message {to}')
             logger.error('Message box not found. Probably the xpath changed... Check it out.')
             logger.error(f'Exeception: {e}')
+            return False
         
 
     def getStatsOf(self, influencer : str) :
