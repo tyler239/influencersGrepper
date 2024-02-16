@@ -152,7 +152,6 @@ class RootInfluencer :
             for _ in soup.css.select('a') : 
                 if _.get('href') not in links : links.append(_.get('href',''))
         
-
         # Now go to each one of this links just to get the name of the account
         for link in links : 
             try :
@@ -168,3 +167,82 @@ class RootInfluencer :
                 print(f'Exeception: {e}')
                 
         return currentInfluencers
+
+
+    def getRelatedInfluencers(self, influ : str) :
+        self.driver.get(f'https://www.instagram.com/{influ}/')
+        randomAwait();randomAwait()
+
+        usernames = []
+
+        try :
+            #Here I m considering that both the message and the related button render at the same time
+            WebDriverWait(self.driver, 70).until(EC.presence_of_element_located((By.XPATH, '//div[text()="Message"]')))
+            self.driver.find_elements(By.XPATH, '//div[@role="button"]')[2].click()
+
+            #There are two ways to get them. Is good to have the both in the sleeve
+
+            #1 - By the see all link
+            randomAwait()
+            WebDriverWait(self.driver, 70).until(EC.presence_of_element_located((By.XPATH, '//span[text()="See all"]'))).click()
+
+            WebDriverWait(self.driver, 70).until(EC.presence_of_element_located((By.XPATH, '//div[text()="Suggested for you"]')))
+            randomAwait()
+
+            #Scrolling functonality to load more influencers
+            sx, sy = 0, 0
+            for _ in range(3) :
+                #Getting all the visible a tags
+                soup = (BeautifulSoup(self.driver.find_element(By.CSS_SELECTOR, 'div[style="height: 400px; overflow: hidden auto;"]')
+                                      .get_attribute('innerHTML'), 'html.parser'))
+                a_tags = soup.find_all('a')
+            
+                #Extracting the usernames and setting them in the usernames list
+                for a in a_tags :
+                    username = grepName(a.get('href', 'Not found'))
+                    if username not in usernames : usernames.append(username)
+
+                #The code for scrolling
+                randomAwait()
+                sy += 810
+                self.driver.execute_script(f'document.querySelector(\'div[style="height: 400px; overflow: hidden auto;"]\').scroll({sx},{sy})')
+
+        except Exception as e:
+            try : 
+                #2 - By the suggested under the stories
+                randomAwait()
+                self.driver.get(f'https://www.instagram.com/{influ}/')
+                randomAwait()
+                WebDriverWait(self.driver, 70).until(EC.presence_of_element_located((By.XPATH, '//div[text()="Message"]')))
+                self.driver.find_elements(By.XPATH, '//div[@role="button"]')[2].click()
+
+                randomAwait()
+
+                #Scrolling functionality 
+                while True : 
+                    presentation = self.driver.find_elements(By.XPATH, '//div[@role="presentation"]')[0]
+                    soup = BeautifulSoup(presentation.get_attribute('innerHTML'), 'html.parser')
+                    a_tags = soup.find_all('a')
+
+                    for a in a_tags :
+                        username = grepName(a.get('href', 'Not found'))
+                        if username not in usernames : usernames.append(username)
+
+                    randomAwait()
+                    randomAwait()
+
+                    try : 
+                        button = self.driver.find_element(By.CSS_SELECTOR, 'div[role="presentation"] + button[aria-label="Next"]')
+                    except :
+                        break 
+
+                    if button :
+                        button.click()
+                        randomAwait()
+
+            except Exception as e :
+                print('Related influencers not found with the 2 methods. Probably the xpath changed... Check it out.')
+                print(f'Exeception: {e}')
+
+        
+        return usernames
