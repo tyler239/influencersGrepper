@@ -1,4 +1,10 @@
+import re
+
 RELATED_INFLUENCERS = []
+
+
+def sanitezeHashtags(hashtags : str) -> list :
+    return [h.strip().replace('#', '') for h in re.findall(r'#[^#]+', hashtags)]
 
 def sanitation(s) :
     s = s.strip().replace(',', '.')

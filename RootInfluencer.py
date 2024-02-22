@@ -4,9 +4,9 @@ import random, time
 from Utils.Typer import Typer
 from bs4 import BeautifulSoup
 from driverModule import getDriver
-from Utils.constants import sanitation
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from Utils.constants import sanitation, sanitezeHashtags
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from Utils.utils import getCookies, grepFileName, getInfluencersFile
@@ -28,7 +28,7 @@ randomAwait = lambda : time.sleep(random.randint(1, 7))
 grepName = lambda url : re.findall(r'/(.+)/', url)[0]
 
 class RootInfluencer :
-    def __init__(self, _username, _hashtag, _message) -> None:
+    def __init__(self, _username, _hashtags, _message) -> None:
         self.cookies = getCookies(_username)
         self.driver = getDriver(headless=True)
         self.typer = Typer()
@@ -36,7 +36,7 @@ class RootInfluencer :
         randomAwait()
         self.driver.set_window_size(1440, 900)
         self.username = _username
-        self.hashtag = _hashtag
+        self.hashtags = _hashtags
         self.msg = _message
     
     def loadCookies(self) -> bool :
@@ -71,7 +71,7 @@ class RootInfluencer :
 
         #Click on the message button
         try : 
-            WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.XPATH, '//div[text()="Message"]'))).click()
+            WebDriverWait(self.driver, 50).until(EC.presence_of_element_located((By.XPATH, '//div[text()="Message"]'))).click()
         except : 
             try : 
                 self.driver.find_elements(By.XPATH, '//div[@role="button"]')[1].click()
@@ -84,7 +84,7 @@ class RootInfluencer :
         #Send the message
         randomAwait()
         try :
-            WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Message"]/p')))
+            WebDriverWait(self.driver, 50).until(EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Message"]/p')))
             x = self.driver.find_element(By.XPATH, '//div[@aria-label="Message"]/p')
             self.typer.send(x, self.msg)
             x.send_keys(Keys.ENTER)
@@ -129,43 +129,53 @@ class RootInfluencer :
         finally :
             return links
     
-    def getInfluencers(self) -> list : 
-        self.hashtag = self.hashtag.replace('#', '')
-        self.driver.get(f'https://www.instagram.com/explore/tags/{self.hashtag}/')
-        randomAwait()
-        links = []
-        currentInfluencers = []
-        
+    def getInfluencers(self) -> list :
+        self.hashtags = sanitezeHashtags(self.hashtags)
+
+        # Important variables for this function
         savedInfluencers = getInfluencersFile()
+        currentInfluencers = []
 
-        '''
-        Here the name of the accounts are not visiable, so we are grepping the url to that post 
-        and them, getting the name of the account
-        '''
-        WebDriverWait(self.driver, 90).until(EC.presence_of_element_located((By.XPATH, '//article//div[count(div)=3]')))
-
-        # Get only the rows that have 3 divs, which are the posts
-        for i in self.driver.find_elements(By.XPATH, '//article//div[count(div)=3]') :
-            soup = BeautifulSoup(i.get_attribute('innerHTML'), 'html.parser')
+        for hashtag in self.hashtags : 
+            self.driver.get(f'https://www.instagram.com/explore/tags/{hashtag}/')
+            randomAwait()
+            links = []
             
-            # Get the href of the 3 links
-            for _ in soup.css.select('a') : 
-                if _.get('href') not in links : links.append(_.get('href',''))
-        
-        # Now go to each one of this links just to get the name of the account
-        for link in links : 
-            try :
-                self.driver.get(f'https://www.instagram.com{link}')
-                randomAwait();randomAwait()
-                
-                WebDriverWait(self.driver, 70).until(EC.presence_of_element_located((By.XPATH, '//main//a//span')))
-                name = self.driver.find_elements(By.XPATH, '//main//a//span')[0].text
-                if name not in savedInfluencers and name not in currentInfluencers : 
-                    currentInfluencers.append(name)  
+            '''
+            Here the name of the accounts are not visiable, so we are grepping the url to that post 
+            and them, getting the name of the account
+            '''
+            try : 
+                WebDriverWait(self.driver, 90).until(EC.presence_of_element_located((By.XPATH, '//article//div[count(div)=3]')))
             except Exception as e :
-                print(f'Error going to {link}...')
-                print(f'Exeception: {e}')
+                logger.error(f'Error getting the posts of the hashtag {hashtag}...')
+                logger.error('Probably the hashtag is wrong...')
+                logger.error(f'Exeception: {e}')
+                continue
+
+            # Get only the rows that have 3 divs, which are the posts
+            for i in self.driver.find_elements(By.XPATH, '//article//div[count(div)=3]') :
+                soup = BeautifulSoup(i.get_attribute('innerHTML'), 'html.parser')
                 
+                # Get the href of the 3 links
+                for _ in soup.css.select('a') : 
+                    if _.get('href') not in links : links.append(_.get('href',''))
+            
+            # Now go to each one of this links just to get the name of the account
+            for link in links :
+                try :
+                    self.driver.get(f'https://www.instagram.com{link}')
+                    randomAwait();randomAwait()
+                    
+                    WebDriverWait(self.driver, 70).until(EC.presence_of_element_located((By.XPATH, '//main//a//span')))
+                    name = self.driver.find_elements(By.XPATH, '//main//a//span')[0].text
+                    print(name)
+                    if name not in savedInfluencers and name not in currentInfluencers : 
+                        currentInfluencers.append(name)  
+                except Exception as e :
+                    print(f'Error going to {link}...')
+                    print(f'Exeception: {e}')
+                    
         return currentInfluencers
 
 

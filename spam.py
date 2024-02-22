@@ -25,11 +25,11 @@ def filterInfluencers(influencer : RootInfluencer, influencers : list = []) :
             # Filter based on the posts, followers or following attributes
             posts_followers_following = influencer.getStatsOf(i)
             if posts_followers_following == None : continue
-            if posts_followers_following[1] < 1000 : continue
+            if posts_followers_following[1] > 10000 : continue
 
-            # Filter based on links in the bio
+            '''# Filter based on links in the bio
             links = influencer.getLinksOf(i)
-            if any(['/?u' in link for link in links]) : continue
+            if any(['/?u' in link for link in links]) : continue'''
             
             RELATED_INFLUENCERS.append(i)
             logger.info(f'{i} was selected.')
@@ -61,7 +61,7 @@ def spamMessage(influencer : RootInfluencer) :
 
 if __name__ == '__main__' :
     if len(sys.argv) < 4 :
-        logger.error('Was not passed the username, or the target hashtag, or the message to spam.s')
+        logger.error('Was not passed the username, or the target hashtags, or the message to spam.')
         logger.error(f'{sys.argv}')
         print('Please, pass the necessary arguments (username, hashtag, message).')
         exit()
@@ -70,7 +70,7 @@ if __name__ == '__main__' :
     y = sys.argv[2].strip()
     z = sys.argv[3].strip()
     logger.info(f'Username being used: {x}')
-    logger.info(f'Target hashtag: {y}')
+    logger.info(f'Target hashtags: {y}')
     logger.info(f'Message to spam: {z}')
 
     # Create the rootInfluencer object
@@ -92,5 +92,6 @@ if __name__ == '__main__' :
     
     randomAwait()   
     rootInfluencer.driver.close()
+    rootInfluencer.driver.quit()
 
     logger.info('Finished the execution.')

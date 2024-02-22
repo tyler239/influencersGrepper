@@ -22,7 +22,11 @@ logger.addHandler(handler)
 class BaseFrame:
     def __init__(self, root):
         self.root = root
+
+        # Variables that the user will pass
         self.username = ''
+        self.hashtags = ''
+        self.message = ''
 
         # Setting the styles of the widgets
         self.style = ttk.Style()
@@ -74,17 +78,34 @@ class BaseFrame:
     def third(self):
         logger.info('In the third state of the GUI')
         self.refresh()
-        self.label.configure(text='Target hashtag:')
+        self.label.configure(text='Target hashtags:')
         self.input.configure()
-        self.button.configure(text='Submit', command=self.fourth)
+        self.button.configure(text='Submit', command=self.checkHashtags)
         self.label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
         self.input.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         self.button.place(relx=0.5, rely=0.6, anchor=tk.CENTER)
-    
+
+    def checkHashtags(self) :
+        self.hashtags = self.input.get().strip()
+        self.refresh()
+        logger.info(f'Checking the following hashtags: {self.hashtags}')
+
+        if(len(self.hashtags) == 0) :
+            self.label.configure(text='Please, you need to insert a hashtag.')
+            self.button.configure(text='Back', command=self.third)
+        elif(not '#' in self.hashtags) :
+            self.label.configure(text='Insert the hashtag in a correct form like\n#ruyter#ruytercortes')
+            self.button.configure(text='Back', command=self.third)
+        # If everything is ok, can go the fourth state
+        else :
+            self.fourth()
+        
+        self.label.place(relx=0.5, rely=0.4, anchor=tk.CENTER)
+        self.button.place(relx=0.5, rely=0.6, anchor=tk.CENTER)
+
 
     def fourth(self):
         logger.info('In the fourth state of the GUI')
-        self.hashtag = self.input.get().strip()
         self.refresh()
         self.label.configure(text='Message to spam:')
         self.input.configure()
@@ -113,7 +134,7 @@ class BaseFrame:
         self.label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         try:
-            threading.Thread(target=self.runSubprocess, args=('spam.py', self.username ,self.hashtag, self.message)).start()
+            threading.Thread(target=self.runSubprocess, args=('spam.py', self.username ,self.hashtags, self.message)).start()
         except Exception as e:
             print(e)
             exit()
@@ -164,7 +185,7 @@ class BaseFrame:
         if self.subprocessComplete:
             self.label.configure(text='Done!\nYou can close the window now.')
             if not self.subprocessComplete:
-                self.root.after(20000, self.root.destroy)  # Close the window after 20 seconds if subprocess not complete
+                self.root.after(10000, self.root.destroy)  # Close the window after 10 seconds if subprocess not complete
             return
 
         self.label.configure(text=self.load[self.counter])
